@@ -29,3 +29,28 @@ Waypoint* Waypoint::getRandomLink() {
 osg::Vec3 Waypoint::getPosition() {
     return position;
 }
+
+void buildPathGraph(osg::ref_ptr<osg::Node> city, std::vector<Waypoint*>& waypoints) {
+    osgUtil::IntersectVisitor intersectVisitor;
+
+    for(unsigned i = 0; i < waypoints.size(); i++) {
+        int c = 0;
+        for(unsigned j = 0; j < waypoints.size(); j++) {
+            if(i != j) {
+
+                //TODO: test left and right lanes
+                osg::ref_ptr<osgUtil::LineSegmentIntersector> lineSegmentIntersector = new osgUtil::LineSegmentIntersector(waypoints[i]->getPosition(), waypoints[j]->getPosition());
+                osgUtil::IntersectionVisitor intersectionVisitor(lineSegmentIntersector);
+                intersectionVisitor.setTraversalMode(osg::NodeVisitor::TRAVERSE_ALL_CHILDREN);
+                city->accept(intersectionVisitor);
+
+                // nothing between both waypoints
+                if(!lineSegmentIntersector->containsIntersections()) {
+                    waypoints[i]->linkTo(waypoints[j]);
+                    c++;
+                }
+            }
+        }
+        std::cout << "Waypoint#" << i << " got " << c << " neighbours." << std::endl;
+    }
+}

@@ -18,6 +18,8 @@
 
 using namespace std;
 
+std::vector<Waypoint*> waypoints;
+
 osg::Quat eulerQuat(osg::Vec3 a, osg::Vec3 b, osg::Vec3 c = osg::Z_AXIS)
 {
     osg::Quat quat; 
@@ -27,7 +29,6 @@ osg::Quat eulerQuat(osg::Vec3 a, osg::Vec3 b, osg::Vec3 c = osg::Z_AXIS)
     return quat.inverse();
 }
 
-std::vector<Waypoint*> waypoints;
 
 class Vehicle
 {
@@ -115,7 +116,8 @@ osg::ref_ptr<osg::Node> createTerrain() {
     //terrainTile -> setColorLayer(0, colorLayer);
     
     osg::ref_ptr<osg::Node> terrainTile = osgDB::readNodeFile("data/city/buildings.3ds");
-    
+    buildPathGraph(terrainTile, waypoints);
+
     osg::ref_ptr<osg::MatrixTransform> terrainScale = new osg::MatrixTransform();
     terrainScale -> setMatrix(
                         osg::Matrix::scale(1.0, 1.0, 1.0)
@@ -177,10 +179,8 @@ int main() {
 
     waypoints.push_back(new Waypoint(osg::Vec3(-47, 11, 1.5)));
     waypoints.push_back(new Waypoint(osg::Vec3(45, 17, 1.5)));
-    waypoints.push_back(new Waypoint(osg::Vec3(-47, 11, 1.5)));
     waypoints.push_back(new Waypoint(osg::Vec3(-19, 60, 1.5)));
     waypoints.push_back(new Waypoint(osg::Vec3(-6, -44, 1.5)));
-    waypoints.push_back(new Waypoint(osg::Vec3(-36, -10, 1.5)));
     waypoints.push_back(new Waypoint(osg::Vec3(-36, -10, 1.5)));
     waypoints.push_back(new Waypoint(osg::Vec3(47, 54, 1.5)));
     waypoints.push_back(new Waypoint(osg::Vec3(48, -37, 1.5)));

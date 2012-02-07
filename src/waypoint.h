@@ -16,6 +16,8 @@
 #include <osgGA/DriveManipulator>
 #include <osgGA/TerrainManipulator>
 #include <osgViewer/ViewerEventHandlers>
+#include <osgUtil/IntersectVisitor>
+#include <osgUtil/LineSegmentIntersector>
 
 class Waypoint
 {
@@ -33,5 +35,8 @@ public:
     Waypoint* getRandomLink();
     osg::Vec3 getPosition();
 };
+
+
+void buildPathGraph(osg::ref_ptr<osg::Node> city, std::vector<Waypoint*>& waypoints);
 
 #endif
