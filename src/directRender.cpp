@@ -14,6 +14,8 @@
 #include <osgGA/TerrainManipulator>
 #include <osgViewer/ViewerEventHandlers>
 
+#include "waypoint.h"
+
 using namespace std;
 
 osg::Quat eulerQuat(osg::Vec3 a, osg::Vec3 b, osg::Vec3 c = osg::Z_AXIS)
@@ -25,42 +27,61 @@ osg::Quat eulerQuat(osg::Vec3 a, osg::Vec3 b, osg::Vec3 c = osg::Z_AXIS)
     return quat.inverse();
 }
 
-osg::ref_ptr<osg::Node> createCar() {
-    float speed = 10.0f;
+std::vector<Waypoint*> waypoints;
 
-    osg::ref_ptr<osg::Node> nodeCar = osgDB::readNodeFile("data/Vehicles-LowRes/Car.ive");
-    osg::ref_ptr<osg::MatrixTransform> nodeCarTransform = new osg::MatrixTransform(); 
-    osg::ref_ptr<osg::MatrixTransform> nodeCarTransform2 = new osg::MatrixTransform();
-    nodeCarTransform2 -> setMatrix(osg::Matrix::rotate(3.14159 / 2.0, 0, 1, 0) * osg::Matrix::rotate(3.14159 / 2.0, 0, 0, 1));
-
-    osg::Group* groupCar = nodeCar->asGroup();
-    int i = rand() % groupCar->getNumChildren();
-    nodeCar = groupCar->getChild(i);
-
-    osg::ref_ptr<osg::AnimationPath> animationPath = new osg::AnimationPath();
+class Vehicle
+{
+private:
+    osg::ref_ptr<osg::MatrixTransform> nodeVehicleTransform;
+    osg::ref_ptr<osg::AnimationPath> animationPath;
+    osg::ref_ptr<osg::AnimationPathCallback> animationPathCallback;
     std::vector<osg::Vec3> points;
-    points.push_back(osg::Vec3(-46, 53, 1.5));
-    points.push_back(osg::Vec3(47, 52, 1.5));
-    points.push_back(osg::Vec3(47, -12, 17));
-    points.push_back(osg::Vec3(-47, -12, 170));
+public:
+    Vehicle(osg::Node* geo) {
+        /*
+        float speed = 10.0f;
 
-    osg::Quat direction(eulerQuat(points[0], points[1]));
-    animationPath->insert(0, osg::AnimationPath::ControlPoint(points[0], direction));
-    for(int i = 1; i < points.size() - 1; i++)
-    {
-        animationPath->insert(speed * (float)i - 1, osg::AnimationPath::ControlPoint(points[i], direction));
+        animationPath = new osg::AnimationPath();
+        animationPathCallback = new osg::AnimationPathCallback(animationPath);
+        nodeVehicleTransform = new osg::MatrixTransform();
+        nodeVehicleTransform->addChild(geo);
+        nodeCarTransform->setUpdateCallback(animationPathCallback);
 
-        direction = eulerQuat(points[i], points[i + 1]);
-        animationPath->insert(speed * (float)i + 1, osg::AnimationPath::ControlPoint(points[i], direction));
+        // determine the path : loop through random points
+        Waypoint* waypointStart = waypoints[rand() % waypoints.size()];
+        for(Waypoint* waypoint = waypointStart; waypoint != waypointStart; waypoint = waypoint->getRandomLink()) {
+            points.push_back(waypoint->getPosition());
+        }
+
+        // make an animationpath correspond to the points we selected
+        osg::Quat direction(eulerQuat(points[0], points[1]));
+        animationPath->insert(0, osg::AnimationPath::ControlPoint(points[0], direction));
+        for(int i = 1; i < points.size() - 1; i++)
+        {
+            animationPath->insert(speed * (float)i - 1, osg::AnimationPath::ControlPoint(points[i], direction));
+
+            direction = eulerQuat(points[i], points[i + 1]);
+            animationPath->insert(speed * (float)i + 1, osg::AnimationPath::ControlPoint(points[i], direction));
+        }
+        animationPath->insert(speed * (float)(points.size() - 1), osg::AnimationPath::ControlPoint(points[points.size() - 1], direction));
+        */
     }
-    animationPath->insert(speed * (float)(points.size() - 1), osg::AnimationPath::ControlPoint(points[points.size() - 1], direction));
 
-    osg::ref_ptr<osg::AnimationPathCallback> animationPathCallback = new osg::AnimationPathCallback(animationPath);
-    nodeCarTransform->setUpdateCallback(animationPathCallback);
-    nodeCarTransform->addChild(nodeCarTransform2);
-    nodeCarTransform2->addChild(nodeCar);
+    osg::Node* getNode() {
+        return nodeVehicleTransform;
+    }
+};
 
-    return nodeCarTransform;
+osg::ref_ptr<osg::Node> createCar() {
+    osg::ref_ptr<osg::Node> nodeCar = osgDB::readNodeFile("data/Vehicles-LowRes/Car.ive");
+    osg::Group* groupCar = nodeCar->asGroup();
+
+    osg::ref_ptr<osg::MatrixTransform> nodeCarTransform = new osg::MatrixTransform(); 
+    nodeCarTransform -> setMatrix(osg::Matrix::rotate(M_PI / 2.0, 0, 1, 0) * osg::Matrix::rotate(M_PI / 2.0, 0, 0, 1));
+    nodeCarTransform -> addChild(groupCar->getChild(rand() % groupCar->getNumChildren()));
+    Vehicle* vehicle = new Vehicle(nodeCarTransform);
+
+    return vehicle->getNode();
 }
 
 osg::ref_ptr<osg::Node> createTerrain() {
@@ -119,6 +140,9 @@ osg::ref_ptr<osg::Group> createSceneGraph() {
         osg::Matrix::scale(0.2, 0.2, 0.4)
     );
 
+    for(unsigned i = 0; i < waypoints.size(); i++)
+        root->addChild(waypoints[i]->getNode());
+
     root -> addChild(skyDomeTransform.get());
      
     root -> addChild(createTerrain());
@@ -132,11 +156,11 @@ osg::ref_ptr<osg::Group> createSceneGraph() {
     
      osg::ref_ptr<osg::Light> light = new osg::Light();
      light -> setLightNum(0);
-     light -> setAmbient( osg::Vec4d(.1, .1, .1, 1.0) );
+     light -> setAmbient( osg::Vec4d(.4f, .4f, .4f, 1.0) );
      light -> setDiffuse( osg::Vec4(.8f, .8f, .8f, 1.0f) );
      light -> setSpecular( osg::Vec4(.8f, .8f, .8f, 1.0f) );
      
-     light -> setPosition( osg::Vec4(0.0f, 0.0f, 300.0f, 0.0f) );
+     light -> setPosition( osg::Vec4(300.0f, 300.0f, 300.0f, 0.0f) );
      
      osg::ref_ptr<osg::LightSource> lightSource = new osg::LightSource();
      lightSource -> setLight(light);
@@ -149,8 +173,18 @@ osg::ref_ptr<osg::Group> createSceneGraph() {
 }
 
 int main() {
-
     srand(time(NULL));
+
+    waypoints.push_back(new Waypoint(osg::Vec3(-47, 11, 1.5)));
+    waypoints.push_back(new Waypoint(osg::Vec3(45, 17, 1.5)));
+    waypoints.push_back(new Waypoint(osg::Vec3(-47, 11, 1.5)));
+    waypoints.push_back(new Waypoint(osg::Vec3(-19, 60, 1.5)));
+    waypoints.push_back(new Waypoint(osg::Vec3(-6, -44, 1.5)));
+    waypoints.push_back(new Waypoint(osg::Vec3(-36, -10, 1.5)));
+    waypoints.push_back(new Waypoint(osg::Vec3(-36, -10, 1.5)));
+    waypoints.push_back(new Waypoint(osg::Vec3(47, 54, 1.5)));
+    waypoints.push_back(new Waypoint(osg::Vec3(48, -37, 1.5)));
+
     osg::ref_ptr<osgGA::KeySwitchMatrixManipulator> keySwitchManipulator = new osgGA::KeySwitchMatrixManipulator();
 
     osg::ref_ptr<osgGA::TrackballManipulator> trackBallManip = new osgGA::TrackballManipulator();
@@ -183,4 +217,3 @@ int main() {
     viewer->run();
     return 0;
 }
-
