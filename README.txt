@@ -1,6 +1,2 @@
-Environnement de Développement:
-
--Linux 64 bits (Archlinux)
--Éditeur de text avec coloration syntaxique: geany.
--CMake/make
--gcc/g++
+Un petit projet modélisant une petite ville avec des voitures volantes
+à l'aide d'openscenegraph.
