@@ -16,11 +16,22 @@
 
 using namespace std;
 
+osg::Quat eulerQuat(osg::Vec3 a, osg::Vec3 b, osg::Vec3 c = osg::Z_AXIS)
+{
+    osg::Quat quat; 
+    osg::Matrix matrix; 
+    matrix.makeLookAt(a, b, c);
+    matrix.get(quat);
+    return quat.inverse();
+}
+
 osg::ref_ptr<osg::Node> createCar() {
     float speed = 10.0f;
 
     osg::ref_ptr<osg::Node> nodeCar = osgDB::readNodeFile("data/Vehicles-LowRes/Car.ive");
     osg::ref_ptr<osg::MatrixTransform> nodeCarTransform = new osg::MatrixTransform(); 
+    osg::ref_ptr<osg::MatrixTransform> nodeCarTransform2 = new osg::MatrixTransform();
+    nodeCarTransform2 -> setMatrix(osg::Matrix::rotate(3.14159 / 2.0, 0, 1, 0) * osg::Matrix::rotate(3.14159 / 2.0, 0, 0, 1));
 
     osg::Group* groupCar = nodeCar->asGroup();
     int i = rand() % groupCar->getNumChildren();
@@ -31,20 +42,23 @@ osg::ref_ptr<osg::Node> createCar() {
     points.push_back(osg::Vec3(-46, 53, 1.5));
     points.push_back(osg::Vec3(47, 52, 1.5));
     points.push_back(osg::Vec3(47, -12, 17));
+    points.push_back(osg::Vec3(-47, -12, 170));
 
-    osg::Quat direction(0, 0, 0, 1);
+    osg::Quat direction(eulerQuat(points[0], points[1]));
     animationPath->insert(0, osg::AnimationPath::ControlPoint(points[0], direction));
     for(int i = 1; i < points.size() - 1; i++)
     {
         animationPath->insert(speed * (float)i - 1, osg::AnimationPath::ControlPoint(points[i], direction));
-        direction.makeRotate(points[i] - points[i - 1], points[i + 1] - points[i]);
+
+        direction = eulerQuat(points[i], points[i + 1]);
         animationPath->insert(speed * (float)i + 1, osg::AnimationPath::ControlPoint(points[i], direction));
     }
     animationPath->insert(speed * (float)(points.size() - 1), osg::AnimationPath::ControlPoint(points[points.size() - 1], direction));
 
     osg::ref_ptr<osg::AnimationPathCallback> animationPathCallback = new osg::AnimationPathCallback(animationPath);
     nodeCarTransform->setUpdateCallback(animationPathCallback);
-    nodeCarTransform->addChild(nodeCar);
+    nodeCarTransform->addChild(nodeCarTransform2);
+    nodeCarTransform2->addChild(nodeCar);
 
     return nodeCarTransform;
 }
