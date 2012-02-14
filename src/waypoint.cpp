@@ -41,7 +41,7 @@ void buildPathGraph(osg::ref_ptr<osg::Node> city, std::vector<Waypoint*>& waypoi
     osgUtil::IntersectVisitor intersectVisitor;
 
     //define distance between two points alog the edges
-    double distanceBetweenPoints = 5.0;
+    double distanceBetweenPoints = 22.5;
 
     //Define the sphere for points along the edges
     osg::ref_ptr<osg::Sphere> sphereShape = new osg::Sphere(osg::Vec3d(0.0, 0.0, 0.0), .3);
@@ -58,7 +58,7 @@ void buildPathGraph(osg::ref_ptr<osg::Node> city, std::vector<Waypoint*>& waypoi
         int c = 0;
         for(unsigned j = 0; j < waypoints.size(); j++) {
             if(i != j) {
-                //TODO: test left and right lanes
+                // test for intersections against buildings, and don't make paths trough them, just between them
                 osg::ref_ptr<osgUtil::LineSegmentIntersector> lineSegmentIntersector = new osgUtil::LineSegmentIntersector(waypoints[i]->getPosition(), waypoints[j]->getPosition());
                 osgUtil::IntersectionVisitor intersectionVisitor(lineSegmentIntersector);
                 intersectionVisitor.setTraversalMode(osg::NodeVisitor::TRAVERSE_ALL_CHILDREN);

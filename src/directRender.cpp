@@ -77,19 +77,18 @@ osg::ref_ptr<osg::MatrixTransform> createRandomPath() {
     osg::Quat direction(eulerQuat(points[0], points[1]));
     pathAnimation->insert(0, osg::AnimationPath::ControlPoint(points[0], direction));
     float time = 0.0f;
-    for(int i = 1; i < points.size() - 1; i++)
+    for(int i = 1; i < points.size(); i++)
     {
         time += 0.1 * (points[i] - points[i - 1]).length();
 
-        pathAnimation->insert(time - 1, osg::AnimationPath::ControlPoint(points[i], direction));
+        pathAnimation->insert(time - 0.5, osg::AnimationPath::ControlPoint(points[i], direction));
 
         direction = eulerQuat(points[i], points[i + 1]);
-        pathAnimation->insert(time + 1, osg::AnimationPath::ControlPoint(points[i], direction));
+        pathAnimation->insert(time + 0.5, osg::AnimationPath::ControlPoint(points[i], direction));
     }
-    time += (points[points.size() - 1] - points[points.size() - 2]).length();
-    pathAnimation->insert(time, osg::AnimationPath::ControlPoint(points[points.size() - 1], direction));
-
-    pathAnimationCallback->setTimeOffset(time * (float)rand() / (float)RAND_MAX);
+    direction = eulerQuat(points[points.size() - 1], points[0]);
+    time += 0.1 * (points[points.size() - 1] - points[0]).length();
+    pathAnimation->insert(time, osg::AnimationPath::ControlPoint(points[0], direction));
 
     return pathTransform;
 }
@@ -206,12 +205,12 @@ void drawRoads() {
 int main() {
     srand(time(NULL));
 
-    for(float z = 1.5; z <= 100.0; z += 50.0)
+    for(float z = 5.0f; z <= 75.0f; z += 35.0f)
     {
-        waypoints.push_back(new Waypoint(osg::Vec3(-47, 11, z)));
-        waypoints.push_back(new Waypoint(osg::Vec3(45, 17, z)));
-        waypoints.push_back(new Waypoint(osg::Vec3(-19, 60, z)));
-        waypoints.push_back(new Waypoint(osg::Vec3(-6, -44, z)));
+        waypoints.push_back(new Waypoint(osg::Vec3(11, 11, z)));
+        waypoints.push_back(new Waypoint(osg::Vec3(-11, -11, z)));
+        waypoints.push_back(new Waypoint(osg::Vec3(-19, 20, z)));
+        waypoints.push_back(new Waypoint(osg::Vec3(-6, -34, z)));
         waypoints.push_back(new Waypoint(osg::Vec3(-36, -10, z)));
         waypoints.push_back(new Waypoint(osg::Vec3(47, 54, z)));
         waypoints.push_back(new Waypoint(osg::Vec3(48, -37, z)));
