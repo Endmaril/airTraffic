@@ -199,6 +199,10 @@ osg::ref_ptr<osg::Group> createSceneGraph() {
     return root;
 }
 
+void drawRoads() {
+    
+}
+
 int main() {
     srand(time(NULL));
 

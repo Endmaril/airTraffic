@@ -18,6 +18,8 @@
 #include <osgViewer/ViewerEventHandlers>
 #include <osgUtil/IntersectVisitor>
 #include <osgUtil/LineSegmentIntersector>
+#include <osg/ShapeDrawable>
+#include <osg/Material>
 
 class Waypoint
 {
@@ -30,7 +32,7 @@ public:
     Waypoint(osg::Vec3 position);
     ~Waypoint();
 
-    osg::ref_ptr<osg::Node> getNode();
+    osg::ref_ptr<osg::MatrixTransform> getNode();
     void linkTo(Waypoint* point);
     int getNumLinks();
     Waypoint* getRandomLink();
