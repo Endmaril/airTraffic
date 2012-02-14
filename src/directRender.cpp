@@ -48,7 +48,8 @@ bool createRandomPath(std::vector<osg::Vec3>& points, Waypoint* waypoint = NULL,
     if(!waypoint)
         return false;
 
-    if(first != waypoint)
+    // make a looping path, 20 points long minimum
+    if(first != waypoint/* || points.size() < 20*/)
     {
         if(!first)
         {
@@ -58,14 +59,9 @@ bool createRandomPath(std::vector<osg::Vec3>& points, Waypoint* waypoint = NULL,
         createRandomPath(points, waypoint, first);
     }
     return true;
-
-    //for(Waypoint* waypoint = waypointStart->getRandomLink(); waypoint != waypointStart; waypoint = waypoint->getRandomLink()) {
-    //}
 }
 
 osg::ref_ptr<osg::MatrixTransform> createRandomPath() {
-    float speed = 10.0f;
-
     osg::ref_ptr<osg::MatrixTransform> pathTransform = new osg::MatrixTransform();
     osg::ref_ptr<osg::AnimationPath> pathAnimation = new osg::AnimationPath();
     osg::ref_ptr<osg::AnimationPathCallback> pathAnimationCallback = new osg::AnimationPathCallback(pathAnimation);
@@ -80,14 +76,20 @@ osg::ref_ptr<osg::MatrixTransform> createRandomPath() {
     // make an animationpath correspond to the points we selected
     osg::Quat direction(eulerQuat(points[0], points[1]));
     pathAnimation->insert(0, osg::AnimationPath::ControlPoint(points[0], direction));
+    float time = 0.0f;
     for(int i = 1; i < points.size() - 1; i++)
     {
-        pathAnimation->insert(speed * (float)i - 1, osg::AnimationPath::ControlPoint(points[i], direction));
+        time += 0.1 * (points[i] - points[i - 1]).length();
+
+        pathAnimation->insert(time - 1, osg::AnimationPath::ControlPoint(points[i], direction));
 
         direction = eulerQuat(points[i], points[i + 1]);
-        pathAnimation->insert(speed * (float)i + 1, osg::AnimationPath::ControlPoint(points[i], direction));
+        pathAnimation->insert(time + 1, osg::AnimationPath::ControlPoint(points[i], direction));
     }
-    pathAnimation->insert(speed * (float)(points.size() - 1), osg::AnimationPath::ControlPoint(points[points.size() - 1], direction));
+    time += (points[points.size() - 1] - points[points.size() - 2]).length();
+    pathAnimation->insert(time, osg::AnimationPath::ControlPoint(points[points.size() - 1], direction));
+
+    pathAnimationCallback->setTimeOffset(time * (float)rand() / (float)RAND_MAX);
 
     return pathTransform;
 }
@@ -97,7 +99,7 @@ osg::ref_ptr<osg::Node> createCar() {
     osg::Group* groupCar = nodeCar->asGroup();
 
     osg::ref_ptr<osg::MatrixTransform> nodeCarTransform = new osg::MatrixTransform(); 
-    nodeCarTransform -> setMatrix(osg::Matrix::rotate(M_PI / 2.0, 0, 1, 0) * osg::Matrix::rotate(M_PI / 2.0, 0, 0, 1));
+    nodeCarTransform -> setMatrix(osg::Matrix::rotate(M_PI / 2.0, 0, 1, 0) * osg::Matrix::rotate(M_PI / 2.0, 0, 0, 1)/* * osg::Matrix::translate(2, 0, 0)*/);
     nodeCarTransform -> addChild(groupCar->getChild(rand() % groupCar->getNumChildren()));
 
     return nodeCarTransform;
@@ -151,44 +153,47 @@ osg::ref_ptr<osg::Node> createTerrain() {
 }
 
 osg::ref_ptr<osg::Group> createSceneGraph() {
-    
+
     osg::ref_ptr<osg::Group> root = new osg::Group();
 
     osg::ref_ptr<osg::MatrixTransform> skyDomeTransform = new osg::MatrixTransform(); 
 
     skyDomeTransform -> setMatrix(
-        osg::Matrix::scale(0.2, 0.2, 0.4)
-    );
+            osg::Matrix::scale(0.2, 0.2, 0.4)
+            );
 
     for(unsigned i = 0; i < waypoints.size(); i++)
         root->addChild(waypoints[i]->getNode());
 
     root -> addChild(skyDomeTransform.get());
-     
+
     root -> addChild(createTerrain());
-//~ 
+    //~ 
     //~ osg::ref_ptr<osg::Node> skyDomeModel = osgDB::readNodeFile("skydome.osg");
-//~ 
+    //~ 
     //~ skyDomeTransform -> addChild(skyDomeModel);
     //~ 
     //~ skyDomeTransform -> setMatrix( skyDomeTransform -> getMatrix() * 
-            //~ osg::Matrixd::translate(-skyDomeTransform -> getBound().center()));
-    
-     osg::ref_ptr<osg::Light> light = new osg::Light();
-     light -> setLightNum(0);
-     light -> setAmbient( osg::Vec4d(.4f, .4f, .4f, 1.0) );
-     light -> setDiffuse( osg::Vec4(.8f, .8f, .8f, 1.0f) );
-     light -> setSpecular( osg::Vec4(.8f, .8f, .8f, 1.0f) );
-     
-     light -> setPosition( osg::Vec4(300.0f, 300.0f, 300.0f, 0.0f) );
-     
-     osg::ref_ptr<osg::LightSource> lightSource = new osg::LightSource();
-     lightSource -> setLight(light);
-     root -> addChild(lightSource);
-    
-    osg::ref_ptr<osg::MatrixTransform> car = createRandomPath();
-    car->addChild(createCar());
-    root->addChild(car);
+    //~ osg::Matrixd::translate(-skyDomeTransform -> getBound().center()));
+
+    osg::ref_ptr<osg::Light> light = new osg::Light();
+    light -> setLightNum(0);
+    light -> setAmbient( osg::Vec4d(.4f, .4f, .4f, 1.0) );
+    light -> setDiffuse( osg::Vec4(.8f, .8f, .8f, 1.0f) );
+    light -> setSpecular( osg::Vec4(.8f, .8f, .8f, 1.0f) );
+
+    light -> setPosition( osg::Vec4(300.0f, 300.0f, 300.0f, 0.0f) );
+
+    osg::ref_ptr<osg::LightSource> lightSource = new osg::LightSource();
+    lightSource -> setLight(light);
+    root -> addChild(lightSource);
+
+    for(int i = 0; i < 10; i++)
+    {
+        osg::ref_ptr<osg::MatrixTransform> car = createRandomPath();
+        car->addChild(createCar());
+        root->addChild(car);
+     }
 
 
     return root;
