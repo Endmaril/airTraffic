@@ -32,6 +32,7 @@ public:
 
     osg::ref_ptr<osg::Node> getNode();
     void linkTo(Waypoint* point);
+    int getNumLinks();
     Waypoint* getRandomLink();
     osg::Vec3 getPosition();
 };
