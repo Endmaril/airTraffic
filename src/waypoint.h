@@ -34,11 +34,9 @@ public:
 
     osg::ref_ptr<osg::MatrixTransform> getNode();
     void linkTo(Waypoint* point);
+    int getNumLinks();
     Waypoint* getRandomLink();
     osg::Vec3 getPosition();
-    //~ bool operator==(const Waypoint&) const;
-    //~ bool operator!=(const Waypoint&) const;
-    //~ bool operator<(const Waypoint&) const;
 };
 
 

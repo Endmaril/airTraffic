@@ -23,6 +23,8 @@ void Waypoint::linkTo(Waypoint* point) {
 }
 
 Waypoint* Waypoint::getRandomLink() {
+    if(links.size() == NULL)
+        return NULL;
     return links[rand() % links.size()];
 }
 
@@ -30,20 +32,10 @@ osg::Vec3 Waypoint::getPosition() {
     return position;
 }
 
-//~ bool Waypoint::operator==(const Waypoint& w) const
-//~ {
-    //~ return this->position == w.getPosition();
-//~ }
-//~ 
-//~ bool Waypoint::operator<(const Waypoint&) const
-//~ {
-    //~ return this->position < w.getPosition();
-//~ }
-//~ 
-//~ bool Waypoint::operator!=(const Waypoint&) const
-//~ {
-    //~ return this->position != w.getPosition();
-//~ }
+int Waypoint::getNumLinks()
+{
+    return links.size();
+}
 
 void buildPathGraph(osg::ref_ptr<osg::Node> city, std::vector<Waypoint*>& waypoints) {
     osgUtil::IntersectVisitor intersectVisitor;
@@ -95,6 +87,6 @@ void buildPathGraph(osg::ref_ptr<osg::Node> city, std::vector<Waypoint*>& waypoi
                 }
             }
         }
-        std::cout << "Waypoint#" << i << " got " << c << " neighbours." << std::endl;
+        std::cout << "Waypoint#" << i << " got " << c << " neighbors." << std::endl;
     }
 }
