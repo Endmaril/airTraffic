@@ -40,6 +40,11 @@ bool createRandomPath(std::vector<osg::Vec3>& points, Waypoint* waypoint = NULL,
         } while(waypoint->getNumLinks() == 0);
     }
 
+    if(!first)
+    {
+        first = waypoint;
+    }
+
     // add point
     points.push_back(waypoint->getPosition());
 
@@ -51,13 +56,12 @@ bool createRandomPath(std::vector<osg::Vec3>& points, Waypoint* waypoint = NULL,
     // make a looping path, 20 points long minimum
     if(first != waypoint/* || points.size() < 20*/)
     {
-        if(!first)
-        {
-            first = waypoint;
-        }
 
         createRandomPath(points, waypoint, first);
     }
+    
+    points.push_back(first->getPosition());
+    
     return true;
 }
 
@@ -86,7 +90,7 @@ osg::ref_ptr<osg::MatrixTransform> createRandomPath() {
         direction = eulerQuat(points[i], points[i + 1]);
         pathAnimation->insert(time + 0.5, osg::AnimationPath::ControlPoint(points[i], direction));
     }
-    direction = eulerQuat(points[points.size() - 1], points[0]);
+    direction = eulerQuat(points[points.size() - 2], points[0]);
     time += 0.1 * (points[points.size() - 1] - points[0]).length();
     pathAnimation->insert(time, osg::AnimationPath::ControlPoint(points[0], direction));
 
@@ -167,13 +171,13 @@ osg::ref_ptr<osg::Group> createSceneGraph() {
     root -> addChild(skyDomeTransform.get());
 
     root -> addChild(createTerrain());
-    //~ 
-    //~ osg::ref_ptr<osg::Node> skyDomeModel = osgDB::readNodeFile("skydome.osg");
-    //~ 
-    //~ skyDomeTransform -> addChild(skyDomeModel);
-    //~ 
-    //~ skyDomeTransform -> setMatrix( skyDomeTransform -> getMatrix() * 
-    //~ osg::Matrixd::translate(-skyDomeTransform -> getBound().center()));
+    
+    osg::ref_ptr<osg::Node> skyDomeModel = osgDB::readNodeFile("skydome.osg");
+    
+    skyDomeTransform -> addChild(skyDomeModel);
+    
+    skyDomeTransform -> setMatrix( skyDomeTransform -> getMatrix() * 
+    osg::Matrixd::translate(-skyDomeTransform -> getBound().center()));
 
     osg::ref_ptr<osg::Light> light = new osg::Light();
     light -> setLightNum(0);
