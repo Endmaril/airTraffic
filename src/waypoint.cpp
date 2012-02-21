@@ -8,7 +8,10 @@ Waypoint::Waypoint(osg::Vec3 position) : position(position) {
 
     nodeWaypointTransform = new osg::MatrixTransform();
     nodeWaypointTransform -> setMatrix(osg::Matrix::translate(position));
-    nodeWaypointTransform -> addChild(geo);
+    osg::ref_ptr<osg::MatrixTransform> shifting = new osg::MatrixTransform();
+    shifting -> setMatrix(osg::Matrix::translate(0.0, 0.0, -1.0));
+    nodeWaypointTransform -> addChild(shifting);
+    shifting -> addChild(geo);
 }
 
 Waypoint::~Waypoint() {

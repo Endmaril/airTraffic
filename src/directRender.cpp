@@ -240,10 +240,11 @@ int main() {
     osg::ref_ptr<osgViewer::RecordCameraPathHandler> pathRecorder = new osgViewer::RecordCameraPathHandler();
     viewer -> addEventHandler(pathRecorder);
 
-    osg::ref_ptr<osgGA::AnimationPathManipulator> animManip = new osgGA::AnimationPathManipulator("saved_animation.path");
-    keySwitchManipulator -> addMatrixManipulator('5', "anim", animManip);
-
     viewer -> setSceneData(createSceneGraph());
+    
+    osg::ref_ptr<osg::AnimationPath> camPath = ((osg::AnimationPathCallback*)(createRandomPath() -> getUpdateCallback())) -> getAnimationPath();
+    osg::ref_ptr<osgGA::AnimationPathManipulator> animManip = new osgGA::AnimationPathManipulator(camPath.get());
+    keySwitchManipulator -> addMatrixManipulator('5', "anim", animManip);
     
     viewer->run();
     return 0;
