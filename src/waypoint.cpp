@@ -3,6 +3,7 @@
 osg::ref_ptr<osg::Node> Waypoint::geo = NULL;
 
 Waypoint::Waypoint(osg::Vec3 position) : position(position) {
+    // load once the waypoint model
     if(!geo)
         geo = osgDB::readNodeFile("data/city/waypoint.3ds");
 
@@ -25,8 +26,9 @@ void Waypoint::linkTo(Waypoint* point) {
     links.push_back(point);
 }
 
+// gives a random waypoint which is connected to this one (NULL if none)
 Waypoint* Waypoint::getRandomLink() {
-    if(links.size() == NULL)
+    if(links.size() == 0)
         return NULL;
     return links[rand() % links.size()];
 }
