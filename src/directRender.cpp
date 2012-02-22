@@ -164,7 +164,7 @@ osg::ref_ptr<osg::Group> createSceneGraph() {
     osg::ref_ptr<osg::MatrixTransform> skyDomeTransform = new osg::MatrixTransform(); 
 
     skyDomeTransform -> setMatrix(
-            osg::Matrix::scale(0.2, 0.2, 0.4)
+            osg::Matrix::scale(0.04, 0.04, 0.1)
             );
 
     for(unsigned i = 0; i < waypoints.size(); i++)
@@ -246,7 +246,23 @@ int main() {
     osg::ref_ptr<osgViewer::RecordCameraPathHandler> pathRecorder = new osgViewer::RecordCameraPathHandler();
     viewer -> addEventHandler(pathRecorder);
 
-    viewer -> setSceneData(createSceneGraph());
+    osg::ref_ptr<osg::Group> scene = createSceneGraph();
+
+    double min = DBL_MAX;
+
+    for (int i = 0; i < scene->getNumChildren(); i++)
+    {
+        if (scene -> getChild(i) -> getBound().radius() < min && scene -> getChild(i) -> getBound().radius() > 83)
+            min = scene -> getChild(i) -> getBound().radius();
+    }
+
+    std::cout << min << std::endl;
+
+    viewer -> setSceneData(scene);
+    
+    keySwitchManipulator -> setHomePosition(osg::Vec3d(230 * cos(M_PI/6), 0, 230 * sin(M_PI/6)), 
+                              osg::Vec3d(0.0, 0.0, 0.0),
+                              osg::Vec3d(-sin(M_PI/6), 0.0, cos(M_PI/6)));
     
     osg::ref_ptr<osg::AnimationPath> camPath = ((osg::AnimationPathCallback*)(createRandomPath() -> getUpdateCallback())) -> getAnimationPath();
     osg::ref_ptr<osgGA::AnimationPathManipulator> animManip = new osgGA::AnimationPathManipulator(camPath.get());
