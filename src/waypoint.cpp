@@ -45,8 +45,6 @@ void buildPathGraph(osg::ref_ptr<osg::Node> city, std::vector<Waypoint*>& waypoi
 
     //define distance between two points alog the edges
     double distanceBetweenPoints = 5;
-//~ 22.5;
-    //Define the sphere for points along the edges
     osg::ref_ptr<osg::Sphere> sphereShape = new osg::Sphere(osg::Vec3d(0.0, 0.0, 0.0), .1);
     osg::ref_ptr<osg::ShapeDrawable> sphereDrawable = new osg::ShapeDrawable(sphereShape);
     

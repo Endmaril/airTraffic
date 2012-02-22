@@ -19,6 +19,7 @@
 using namespace std;
 
 std::vector<Waypoint*> waypoints;
+osg::ref_ptr<osg::Node> nodeCar = osgDB::readNodeFile("data/Vehicles-LowRes/Car.ive");
 
 osg::Quat eulerQuat(osg::Vec3 a, osg::Vec3 b, osg::Vec3 c = osg::Z_AXIS)
 {
@@ -100,7 +101,6 @@ osg::ref_ptr<osg::MatrixTransform> createRandomPath() {
 }
 
 osg::ref_ptr<osg::Node> createCar() {
-    osg::ref_ptr<osg::Node> nodeCar = osgDB::readNodeFile("data/Vehicles-LowRes/Car.ive");
     osg::Group* groupCar = nodeCar->asGroup();
 
     osg::ref_ptr<osg::MatrixTransform> nodeCarTransform = new osg::MatrixTransform(); 
@@ -193,7 +193,7 @@ osg::ref_ptr<osg::Group> createSceneGraph() {
     lightSource -> setLight(light);
     root -> addChild(lightSource);
 
-    for(int i = 0; i < 10; i++)
+    for(int i = 0; i < 30; i++)
     {
         osg::ref_ptr<osg::MatrixTransform> car = createRandomPath();
         car->addChild(createCar());
