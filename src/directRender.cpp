@@ -60,7 +60,7 @@ bool createRandomPath(std::vector<osg::Vec3>& points, Waypoint* waypoint = NULL,
         createRandomPath(points, waypoint, first);
     }
     
-    points.push_back(first->getPosition());
+    //points.push_back(first->getPosition());
     
     return true;
 }
@@ -87,12 +87,14 @@ osg::ref_ptr<osg::MatrixTransform> createRandomPath() {
 
         pathAnimation->insert(time - 0.5, osg::AnimationPath::ControlPoint(points[i], direction));
 
-        direction = eulerQuat(points[i], points[i + 1]);
+        direction = eulerQuat(points[i], points[(i + 1) % points.size()]);
         pathAnimation->insert(time + 0.5, osg::AnimationPath::ControlPoint(points[i], direction));
     }
-    direction = eulerQuat(points[points.size() - 2], points[0]);
+    direction = eulerQuat(points[points.size() - 1], points[0]);
     time += 0.1 * (points[points.size() - 1] - points[0]).length();
-    pathAnimation->insert(time, osg::AnimationPath::ControlPoint(points[0], direction));
+    pathAnimation->insert(time - 0.5, osg::AnimationPath::ControlPoint(points[0], direction));
+    direction = eulerQuat(points[0], points[1]);
+    pathAnimation->insert(time + 0.5, osg::AnimationPath::ControlPoint(points[0], direction));
 
     return pathTransform;
 }
